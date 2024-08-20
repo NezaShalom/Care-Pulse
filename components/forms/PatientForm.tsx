@@ -1,17 +1,16 @@
 // SHADCN FORM INSTALLATION
 "use client"
 
-
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { Form } from "@/components/ui/form"
-import { Button } from "../ui/button"
 import CustomFormField from "../CustomFormField"
 import SubmitButton from "../SubmitButton"
 import { useState } from "react"
 import { UserFormValidation } from "@/lib/validation"
 import { useRouter } from "next/navigation"
+import { createUser } from "@/lib/actions/patient.actions"
  
 export enum FormFieldType {
     INPUT = "input",
@@ -24,7 +23,7 @@ export enum FormFieldType {
 }
 
  
-const PatientForm = () => {
+export const PatientForm = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -39,7 +38,7 @@ const PatientForm = () => {
     },
   })
  
-  // 2. after knowing that we are propery collecting the information(values above) the next step is to submit the form, Define a submit handler.
+ // 2. after knowing that we are propery collecting the information(values above) the next step is to submit the form, Define a submit handler.
   async function onSubmit({ name, email, phone }: z.infer<typeof UserFormValidation>) {
     // Do something with the form values.
 
@@ -50,17 +49,19 @@ const PatientForm = () => {
       //the data for the user that we are going to tke into the database
       const userData = { name, email, phone };
 
-      //appwrite function to pass user data
+      //appwrite function to pass(CREATE) user data TO THE DATABASE (MORE ACTION IS DONE IN patient.actions)
       const user = await createUser(userData);
-      if (user) router.push(`/patients/${user.$id}/register`)
+      if(user) router.push(`/patients/${user.$id}/register`)
+       
     } catch (error) {
       console.log(error);
     }
 
-
+    //  setIsLoading(false);
     // ✅ This will be type-safe and validated.
     
   }
+
   return (
     <Form {...form}>
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 flex-1">
@@ -78,6 +79,7 @@ const PatientForm = () => {
         label="Full name"
         placeholder="Your Full name"
         iconSrc="/assets/icons/user.svg"
+        iconAlt="user"
     />
 
     <CustomFormField
@@ -87,6 +89,7 @@ const PatientForm = () => {
         label="Email"
         placeholder="Fill your email"
         iconSrc="/assets/icons/email.svg"
+        iconAlt="email"
     />
 
       <CustomFormField
@@ -100,7 +103,5 @@ const PatientForm = () => {
       <SubmitButton isLoading={isLoading}>Get Started</SubmitButton>
     </form>
   </Form>
-  )
-}
-
-export default PatientForm
+  );
+};

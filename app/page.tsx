@@ -1,18 +1,15 @@
-import PatientForm from "@/components/forms/PatientForm";
-import { Link } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
-export default function Home() {
+import { PatientForm } from "@/components/forms/PatientForm";
+import { PasskeyModal } from "@/components/PassKeyModal";
+
+export default function Home () {
   return (
     <div className="flex h-screen max-h-screen">
-{/*       
-      OTP Verfication | PassKey Modal popup */}
-
-
-      {/* Full/ page layout */}
       <section className="remove-scrollbar container my-auto">
         <div className="sub-container max-w-[496px]">
-          <Image 
+          <Image
             src="/assets/icons/logo-full.svg"
             height={1000}
             width={1000}
@@ -20,13 +17,11 @@ export default function Home() {
             className="mb-12 h-10 w-fit"
           />
 
-          {/* Patient Fill out form section  */}
-      
           <PatientForm />
 
           <div className="text-14-regular mt-20 flex justify-between">
             <p className="justify-items-end text-dark-600 xl:text-left">
-              © 2024 CarePulse
+              © 2024 CarePluse
             </p>
             <Link href="/?admin=true" className="text-green-500">
               Admin
@@ -34,18 +29,14 @@ export default function Home() {
           </div>
         </div>
       </section>
-{/* 
-      Big image section */}
 
-      <Image 
-        src="/assets/images/hello-the-one.jpg"
+      <Image
+        src="/assets/images/onboarding-img.png"
         height={1000}
         width={1000}
         alt="patient"
-        /** It takes 50% of the screen */
         className="side-img max-w-[50%]"
-        />
-
+      />
     </div>
   );
-}
+};
