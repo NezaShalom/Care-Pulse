@@ -5,7 +5,7 @@ import { users } from "../appwrite.config"
 import { parseStringify } from "../utils";
 //import { parseStringify } from "../utils"
 
-//CREATE USER THAT LOGS IN TO THE FIRST PAGE OF OUR SITE
+//CREATE(Register)<<PATIENTFORM>> USER THAT LOGS IN TO THE FIRST PAGE OF OUR SITE
 export const createUser = async (user: CreateUserParams) => {
 
     try {
@@ -30,4 +30,16 @@ export const createUser = async (user: CreateUserParams) => {
         }
     }
 
+}
+
+//Get authenticated user information to use it.
+
+export const getUser = async(userId: string) => {
+
+        try {
+            const user = await users.get(userId);
+        return parseStringify(user);
+        } catch (error) {
+            console.log(error);
+        }
 }
