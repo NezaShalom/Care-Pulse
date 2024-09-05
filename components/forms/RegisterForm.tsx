@@ -1,23 +1,32 @@
-// SHADCN FORM INSTALLATION
 "use client"
 
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
-import { Form, FormControl } from "@/components/ui/form"
-import CustomFormField from "../CustomFormField"
-import SubmitButton from "../SubmitButton"
-import { useState } from "react"
-import { UserFormValidation } from "@/lib/validation"
-import { useRouter } from "next/navigation"
-import { createUser } from "@/lib/actions/patient.actions"
+import { zodResolver } from "@hookform/resolvers/zod";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+
+
+import { Form, FormControl } from "@/components/ui/form";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { SelectItem } from "@/components/ui/select";
+import {
+  Doctors,
+  GenderOptions,
+  IdentificationTypes,
+  PatientFormDefaultValues,
+} from "@/constants";
+import { registerPatient } from "@/lib/actions/patient.actions";
+import { PatientFormValidation } from "@/lib/validation";
+
+import "react-datepicker/dist/react-datepicker.css";
+import "react-phone-number-input/style.css";
+import CustomFormField from "../CustomFormField";
+import { FileUploader } from "../FileUploader";
+import SubmitButton from "../SubmitButton";
 import { FormFieldType } from "./PatientForm"
-import Image from "next/image"
-import { RadioGroup, RadioGroupItem } from "../ui/radio-group"
-import { Label } from "../ui/label"
-import { Doctors, GenderOptions, IdentificationTypes } from "@/constants"
-import { SelectItem } from "../ui/select"
-import { FileUploader } from "../FileUploader"
 
  
 export const RegisterForm = ({ user }: {user: User}) => {
@@ -26,35 +35,58 @@ export const RegisterForm = ({ user }: {user: User}) => {
 
 
   // 1. Define your form AND validations. UserFormValidation is a validation from lib 
-  const form = useForm<z.infer<typeof UserFormValidation>>({
-    resolver: zodResolver(UserFormValidation),
+  const form = useForm<z.infer<typeof PatientFormValidation>>({
+    resolver: zodResolver(PatientFormValidation),
+ 
     defaultValues: {
+      ...PatientFormDefaultValues,
       name: "",
       email: "",
       phone: "",
     },
-  })
+  });
  
  // 2. after knowing that we are propery collecting the information(values above) the next step is to submit the form, Define a submit handler.
-  async function onSubmit({ name, email, phone }: z.infer<typeof UserFormValidation>) {
+  async function onSubmit( values: z.infer<typeof PatientFormValidation>) {
     // Do something with the form values.
-
     setIsLoading(true);
 
+        // Store file upload extracted it info in form data
+        let formData;
+        if (
+          values.identificationDocument &&
+          values.identificationDocument?.length > 0
+        ) {
+          const blobFile = new Blob([values.identificationDocument[0]], {
+            type: values.identificationDocument[0].type,
+          });
+    
+          formData = new FormData();
+          formData.append("blobFile", blobFile);
+          formData.append("fileName", values.identificationDocument[0].name);
+        }
 
     try {
-      //the data for the user that we are going to tke into the database
-      const userData = { name, email, phone };
+      
+      const patientData = {
 
-      //appwrite function to pass(CREATE) user data TO THE DATABASE (MORE ACTION IS DONE IN patient.actions)
-      const user = await createUser(userData);
-      if(user) router.push(`/patients/${user.$id}/register`)
-       
+        //All of the values, and modify those that change such as Id
+        ...values,
+        userId: user.$id,
+        birthDate: new Date(values.birthDate),
+        identificationDocument: formData,
+
+      }
+
+      // @ts-ignore
+      const patient = await registerPatient(patientData);
+
+      if (patient) { router.push(`/patients/${user.$id}/new-appointment`); }
     } catch (error) {
       console.log(error);
     }
 
-    //  setIsLoading(false);
+    setIsLoading(false);
     // ✅ This will be type-safe and validated.
     
   }

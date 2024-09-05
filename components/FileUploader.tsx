@@ -51,3 +51,5 @@ export const FileUploader = ({ files, onChange }: FileUploaderProps) => {
     </div>
   );
 };
+
+export default FileUploader;

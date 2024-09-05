@@ -1,10 +1,22 @@
-'use server';
+"use server"
 
-import { Query, ID } from "node-appwrite"
-import { users } from "../appwrite.config"
+import { Query , ID } from "node-appwrite"
+import { InputFile } from "node-appwrite/file"
+import {
+    BUCKET_ID,
+    DATABASE_ID,
+    ENDPOINT,
+    PATIENT_COLLECTION_ID,
+    PROJECT_ID,
+    databases,
+    storage,
+    users,
+  } from "../appwrite.config";
 import { parseStringify } from "../utils";
 //import { parseStringify } from "../utils"
 
+
+// CREATE APPWRITE USER
 //CREATE(Register)<<PATIENTFORM>> USER THAT LOGS IN TO THE FIRST PAGE OF OUR SITE
 export const createUser = async (user: CreateUserParams) => {
 
@@ -16,7 +28,7 @@ export const createUser = async (user: CreateUserParams) => {
             undefined,
             user.name
         );
-        console.log({newUser})
+        // console.log({newUser})
         
      return parseStringify(newUser);
 
@@ -32,8 +44,8 @@ export const createUser = async (user: CreateUserParams) => {
 
 }
 
+// GET USER
 //Get authenticated user information to use it.
-
 export const getUser = async(userId: string) => {
 
         try {
@@ -43,3 +55,43 @@ export const getUser = async(userId: string) => {
             console.log(error);
         }
 }
+
+
+// REGISTER PATIENT
+export const registerPatient = async ({
+    identificationDocument,
+    ...patient
+  }: RegisterUserParams) => {
+    try {
+      // Upload file ->  // https://appwrite.io/docs/references/cloud/client-web/storage#createFile
+      let file;
+      if (identificationDocument) {
+        const inputFile = InputFile.fromBuffer(
+            identificationDocument?.get("blobFile") as Blob,
+            identificationDocument?.get("fileName") as string
+          )
+  
+        file = await storage.createFile(BUCKET_ID!, ID.unique(), inputFile);
+      }
+
+  
+      // Create new patient document -> https://appwrite.io/docs/references/cloud/server-nodejs/databases#createDocument
+      const newPatient = await databases.createDocument(
+        DATABASE_ID!,
+        PATIENT_COLLECTION_ID!,
+        ID.unique(),
+        {
+          identificationDocumentId: file?.$id || null,
+          identificationDocumentUrl: `${ENDPOINT}/storage/buckets/${BUCKET_ID}/files/${file?.$id}/view?project=${PROJECT_ID}`,
+          ...patient,
+        }
+      )
+
+      console.log({newPatient})
+      return parseStringify(newPatient);
+    } catch (error) {
+      console.error("An error occurred while creating a new patient:", error);
+    }
+  };
+
+

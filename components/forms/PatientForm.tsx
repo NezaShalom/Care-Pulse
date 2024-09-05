@@ -57,7 +57,7 @@ export const PatientForm = () => {
       console.log(error);
     }
 
-    //  setIsLoading(false);
+      setIsLoading(false);
     // ✅ This will be type-safe and validated.
     
   }
